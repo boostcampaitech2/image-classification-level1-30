@@ -15,6 +15,7 @@ class TrainDataset(Dataset):
         self.csv_list = ['ages.csv', 'genders.csv', 'masks.csv']
         self.img_paths = list(pd.read_csv(os.path.join(path, 'images.csv')))
         self.labels = list(map(float, pd.read_csv(os.path.join(path, 'labels.csv')))) # ages.csv, genders.csv, masks.csv
+        # print(self.labels)
         self.transform = transform
 
     def __getitem__(self, index):
@@ -23,7 +24,7 @@ class TrainDataset(Dataset):
         if self.transform: # transformation 적용
             image = self.transform(image)
 
-        label = self.labels[index]
+        label = int(self.labels[index])
         return image, label
 
     def __len__(self):

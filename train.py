@@ -24,11 +24,11 @@ def train(model, train_dataloader, optimizer, criterion, epoch, device):
 
         # Computing Loss
         train_loss, train_metric = criterion.loss_fn(target, y_pred)
-        
+
         max_idx = torch.argmax(y_pred, dim=-1)
-        loss_list.append(sum(train_loss.cpu().numpy())//len(data))
-        metric_list.append(sum(train_metric.cpu().numpy())//len(data))
-        acc = sum(target.cpu().numpy()==max_idx.cpu().numpy())//len(data)
+        loss_list.append(sum(train_loss.detach().cpu().numpy())//len(data))
+        metric_list.append(sum(train_metric.detach().cpu().numpy())//len(data))
+        acc = sum(target.detach().cpu().numpy()==max_idx.detach().cpu().numpy())//len(data)
         acc_list.append(acc)
 
         # Backward

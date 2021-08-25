@@ -79,6 +79,7 @@ def main(args):
     model = EfficientNet.from_pretrained('efficientnet-b0')
     in_features = model._fc.in_features
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
+    # print(model)
 
     # Optimizer
     if args.sgd:
