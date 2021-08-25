@@ -33,12 +33,15 @@ def get_args_parser():
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=4, type=int)
+    parser.add_argument('--weight_decay', default=1e-4, type=float)
+    parser.add_argument('--lr_drop', default=40, type=int)
+    parser.add_argument('--lr_drop_epochs', default=None, type=int, nargs='+')
+
 
     # seed
     parser.add_argument('--seed', default=42, type=int)
 
     # checkpoints
-    parser.add_argument()
 
     return parser
 
@@ -81,7 +84,7 @@ def main(args):
 
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
 
-    criterion = loss.Criterion()
+    criterion = Criterion()
 
     model.to(device)
     
