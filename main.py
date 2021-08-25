@@ -19,24 +19,28 @@ from train import train
 from model import EfficientNet
 from loss import Criterion
 
+from torchsummary import summary
+
 root = '/opt/ml/'
-# train_path = '/opt/ml/input/data/train's
+# train_path = '/opt/ml/input/data/train'
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Image Classification', add_help=False)
 
+    # number of classes
+    parser.add_argument('--classes', default=18, type=int)
+
     # hyperparameters
     parser.add_argument('--lr', default=1e-4, type=float)
-    parser.add_argument('--batch_size', default=2, type=int)
+    parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=4, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--lr_drop', default=40, type=int)
     parser.add_argument('--lr_drop_epochs', default=None, type=int, nargs='+')
-
 
     # seed
     parser.add_argument('--seed', default=42, type=int)
@@ -62,7 +66,7 @@ def main(args):
     # image transformation
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Resize(224, 224),
+        transforms.Resize((224, 224)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
     ])
@@ -73,6 +77,8 @@ def main(args):
 
     # Model
     model = EfficientNet.from_pretrained('efficientnet-b0')
+    in_features = model._fc.in_features
+    model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
 
     # Optimizer
     if args.sgd:
@@ -87,6 +93,7 @@ def main(args):
     criterion = Criterion()
 
     model.to(device)
+    # summary(model.cpu(), input_size=(3,224,224), device='cpu')
     
     ## Model test code
     # inputs = torch.rand(1, 3, 224, 224).to(device)

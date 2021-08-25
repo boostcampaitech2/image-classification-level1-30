@@ -6,10 +6,6 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
-
-from torchvision import transforms
-from torchvision.transforms import Resize, ToTensor, Normalize
 
 
 def train(model, train_dataloader, optimizer, criterion, epoch, device):
@@ -44,5 +40,5 @@ def train(model, train_dataloader, optimizer, criterion, epoch, device):
     avg_acc = sum(acc_list)
     avg_metric = sum(metric_list)
     avg_loss = sum(loss_list)
-    print(f"[Epoch {epoch}] Train Accuracy: {avg_acc}\t F1 Score {avg_metric}\t Loss: {avg_loss}")
+    print(f"[Epoch {epoch}] Train Accuracy: {avg_acc}\t F1 Score: {avg_metric}\t Loss: {avg_loss}")
     torch.save(model, f'./checkpoints/model_epoch{epoch}.pt')

@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class Criterion():
     def __init__(self):
-        self.loss = torch.nn.BCELoss()
+        self.loss = torch.nn.BCEWithLogitsLoss()
 
     # Metric
     def f1_loss(self, y_true:torch.Tensor, y_pred:torch.Tensor, is_training=False) -> torch.Tensor:
@@ -48,7 +48,9 @@ class Criterion():
 
 
     def loss_fn(self, y, y_pred):
+        y_pred_max = torch.argmax(y_pred, dim=-1)
+        one_hot_encoding = (y_pred_max*y)
+
         train_metric = self.f1_loss(y, y_pred)
         train_loss = self.loss(y_pred, y)
-
         return train_loss, train_metric

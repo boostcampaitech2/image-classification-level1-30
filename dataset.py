@@ -1,16 +1,12 @@
 import os
-import csv
-
 import pandas as pd
+
 from PIL import Image
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
-
-from torchvision import transforms
-from torchvision.transforms import Resize, ToTensor, Normalize
+from torch.utils.data import Dataset
 
 
 class TrainDataset(Dataset):
@@ -18,7 +14,7 @@ class TrainDataset(Dataset):
         self.path = path
         self.csv_list = ['ages.csv', 'genders.csv', 'masks.csv']
         self.img_paths = list(pd.read_csv(os.path.join(path, 'images.csv')))
-        self.labels = list(pd.read_csv(os.path.join(path, 'labels.csv'))) # ages.csv, genders.csv, masks.csv
+        self.labels = list(map(float, pd.read_csv(os.path.join(path, 'labels.csv')))) # ages.csv, genders.csv, masks.csv
         self.transform = transform
 
     def __getitem__(self, index):
