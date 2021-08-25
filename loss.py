@@ -10,7 +10,6 @@ from torchvision.transforms import Resize, ToTensor, Normalize
 class Criterion:
     def __init__(self):
         self.loss = torch.nn.BCELoss()
-        return
 
     # Metric
     def f1_loss(self, y_true:torch.Tensor, y_pred:torch.Tensor, is_training=False) -> torch.Tensor:

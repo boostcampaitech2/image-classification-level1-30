@@ -31,7 +31,7 @@ def get_args_parser():
     parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--batch_size', default=2, type=int)
     parser.add_argument('--epochs', default=30, type=int)
-    parser.add_argumet('--sgd', default=False, type=bool)
+    parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=4, type=int)
 
     # seed
