@@ -34,13 +34,17 @@ def get_args_parser():
 
     # hyperparameters
     parser.add_argument('--lr', default=1e-4, type=float)
-    parser.add_argument('--batch_size', default=4, type=int)
+    parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
-    parser.add_argument('--num_workers', default=4, type=int)
+    parser.add_argument('--num_workers', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--lr_drop', default=40, type=int)
     parser.add_argument('--lr_drop_epochs', default=None, type=int, nargs='+')
+
+    # resume
+    parser.add_argument('--resume', default=False, type=bool)
+    parser.add_argument('--checkpoint', default='', type=str)
 
     # seed
     parser.add_argument('--seed', default=42, type=int)
@@ -94,20 +98,12 @@ def main(args):
     criterion = Criterion()
 
     model.to(device)
-    # summary(model.cpu(), input_size=(3,224,224), device='cpu')
-    
-    ## Model test code
-    # inputs = torch.rand(1, 3, 224, 224).to(device)
-    # model = EfficientNet.from_pretrained('efficientnet-b0')
-    # model.eval()
-    # outputs = model(inputs)
-    # print(outputs.shape)
-
+    min_loss = 100
     for epoch in range(args.epochs):
         # training
         # TODO: Logfile or Tensorboard 작성
         print(f"Epoch {epoch} training")
-        train(model, train_dataloader, optimizer, criterion, epoch, device)
+        min_loss = train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss)
         
 
 if __name__ == '__main__':
