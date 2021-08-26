@@ -16,6 +16,7 @@ def train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss
 
     # Training
     model.train()
+    
     for batch_idx, (data, target) in enumerate(tqdm(train_dataloader)):
         x, target = data.to(device), target.to(device)
 
@@ -36,6 +37,7 @@ def train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss
         train_loss.backward()
         optimizer.step()
     
+
     # TODO: Save in logfile
     avg_acc = sum(acc_list)/len(train_dataloader)
     avg_metric = sum(metric_list)/len(train_dataloader)
