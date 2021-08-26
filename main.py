@@ -21,8 +21,6 @@ from loss import Criterion
 
 from torchsummary import summary
 
-root = '/opt/ml/'
-# train_path = '/opt/ml/input/data/train'
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 

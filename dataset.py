@@ -6,28 +6,31 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 class TrainDataset(Dataset):
-    def __init__(self, transform=None, cls=3, tr='mask'):
+
+    def __init__(self,  transform=None, cls=18, tr='mask'):
         self.cls = cls
+        print(cls)
         self.tr = tr
         self.transform = transform
-        self.img_paths = get_imgpath(cls, tr)
-        self.labels = get_label(self.img_paths)
-        self.classes = get_class(cls, tr)
+        self.img_paths = self.get_imgpath(cls, tr)
+        self.labels = self.get_label(self.img_paths)
+        self.classes = self.get_class(cls, tr)
 
-    def get_label(paths):
+    def get_label(self, paths):
         label_list = []
         for p in paths:
             label_list.append(p.split('/')[-2])
         return label_list
 
-    def get_imgpath(cls, tr):
+    def get_imgpath(self, cls, tr):
         if cls == 18:
             return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class', '*/**'))
         else:
             return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class/{tr}', '*/**'))
 
-    def get_class(cls, tr):
-        if cls == 18:
+    def get_class(self, cls, tr):
+        print()
+        if cls == 3:
             if tr == 'mask':
                 return ['correct', 'incorrect', 'no']
             elif tr == 'gender':
@@ -42,7 +45,8 @@ class TrainDataset(Dataset):
 
         if self.transform: # transformation 적용
             image = self.transform(image)
-
+        print('----', self.labels)
+        print('---', self.classes.index(self.labels[index]))
         return image, self.classes.index(self.labels[index])
 
     def __len__(self):
