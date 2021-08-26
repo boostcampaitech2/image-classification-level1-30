@@ -42,5 +42,5 @@ def train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss
     avg_loss = sum(loss_list)/len(train_dataloader)
     print(f"[Epoch {epoch}] Train Accuracy: {avg_acc}\t F1 Score: {avg_metric}\t Loss: {avg_loss}")
     if min_loss > avg_loss:
-        torch.save(model, f'./checkpoints/model_ages_epoch{epoch}.pt')
+        torch.save(model, f'./checkpoints/model.pt')
     return min(min_loss, avg_loss)
