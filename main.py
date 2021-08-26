@@ -64,7 +64,7 @@ def seed_everything(seed: int = 42):
         torch.backends.cudnn.benchmark = True      
 
 def main(args):
-    if os.path.isdir(os.path.join(os.getcwd(), 'checkpoints')):
+    if not os.path.isdir(os.path.join(os.getcwd(), 'checkpoints')):
         os.mkdir(os.path.join(os.getcwd(), 'checkpoints'))
     # image size: (384, 512)
     # image transformation
