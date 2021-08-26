@@ -72,7 +72,7 @@ def main(args):
     ])
 
     # Loading traindataset
-    train_dataset = TrainDataset(transform=transform, cls=args.classes, tr=args.target)
+    train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # Model

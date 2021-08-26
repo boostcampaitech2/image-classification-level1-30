@@ -7,14 +7,14 @@ from torch.utils.data import Dataset
 
 class TrainDataset(Dataset):
 
-    def __init__(self,  transform=None, cls=18, tr='mask'):
-        self.cls = cls
-        print(cls)
+    def __init__(self,  transform=None, classes=18, tr='mask'):
+        super().__init__()
+        self.cls = classes
         self.tr = tr
         self.transform = transform
-        self.img_paths = self.get_imgpath(cls, tr)
+        self.img_paths = self.get_imgpath(classes, tr)
         self.labels = self.get_label(self.img_paths)
-        self.classes = self.get_class(cls, tr)
+        self.classes = self.get_class(classes, tr)
 
     def get_label(self, paths):
         label_list = []
@@ -29,7 +29,6 @@ class TrainDataset(Dataset):
             return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class/{tr}', '*/**'))
 
     def get_class(self, cls, tr):
-        print()
         if cls == 3:
             if tr == 'mask':
                 return ['correct', 'incorrect', 'no']
@@ -45,8 +44,6 @@ class TrainDataset(Dataset):
 
         if self.transform: # transformation 적용
             image = self.transform(image)
-        print('----', self.labels)
-        print('---', self.classes.index(self.labels[index]))
         return image, self.classes.index(self.labels[index])
 
     def __len__(self):
