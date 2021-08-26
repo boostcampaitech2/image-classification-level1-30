@@ -31,6 +31,7 @@ def get_args_parser():
 
     # number of classes
     parser.add_argument('--classes', default=18, type=int)
+    parser.add_argument('--target', default='mask', type=str)
 
     # hyperparameters
     parser.add_argument('--lr', default=1e-4, type=float)
@@ -61,6 +62,7 @@ def seed_everything(seed: int = 42):
         torch.backends.cudnn.benchmark = True      
 
 def main(args):
+
     # image size: (384, 512)
 
     # image transformation
@@ -72,7 +74,7 @@ def main(args):
     ])
 
     # Loading traindataset
-    train_dataset = TrainDataset(root, transform=transform)
+    train_dataset = TrainDataset(transform=transform, cls=args.classes, tr=args.target)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # Model
