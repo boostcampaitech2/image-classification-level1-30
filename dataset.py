@@ -28,7 +28,7 @@ class TrainDataset(Dataset):
             return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class/{tr}', '*/**'))
 
     def get_class(self, cls, tr):
-        if cls == 3:
+        if cls == 3 or cls == 2:
             if tr == 'mask':
                 return ['correct', 'incorrect', 'no']
             elif tr == 'gender':
