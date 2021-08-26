@@ -36,7 +36,7 @@ class TrainDataset(Dataset):
             else:
                 return ['under30','30to60','from60']
         else:
-            return [i for i in range(18)]
+            return [str(i) for i in range(18)]
 
     def __getitem__(self, index):
         image = Image.open(self.img_paths[index].strip())
