@@ -29,6 +29,10 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 def get_args_parser():
     parser = argparse.ArgumentParser('Image Classification', add_help=False)
 
+    # choose model version
+    # larger the number larger the number of param choose from 0 to 7
+    parser.add_argument('--model', default=0, type=int)
+    
     # number of classes
     parser.add_argument('--classes', default=18, type=int)
     parser.add_argument('--target', default='mask', type=str)
@@ -90,7 +94,7 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # Model
-    model = EfficientNet.from_pretrained('efficientnet-b0')
+    model = EfficientNet.from_pretrained(f'efficientnet-b{args.model}')
     in_features = model._fc.in_features
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
     # print(model)
