@@ -19,7 +19,7 @@ from train import train
 from model import EfficientNet
 from loss import Criterion
 
-from torchsummary import summary
+from torch.utils.tensorboard import SummaryWriter
 
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
@@ -89,6 +89,8 @@ def main(args):
         A.VerticalFlip(),
     ])        
     
+    writer = SummaryWriter()
+
     # Loading traindataset
     train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
@@ -113,11 +115,19 @@ def main(args):
 
     model.to(device)
     min_loss = 100
+    global_step = 0
     for epoch in range(args.epochs):
         # training
         # TODO: Logfile or Tensorboard 작성
         print(f"Epoch {epoch} training")
-        min_loss = train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss)
+        min_loss, avg_acc, avg_metric, avg_loss = train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss, writer, global_step)
+
+        writer.add_scalar("Accuracy", avg_acc, epoch)
+        writer.add_scalar("f-1 score", avg_metric, epoch)
+        writer.add_scalar("loss", avg_loss, epoch)
+        global_step += 1
+    
+    writer.flush()
         
 
 if __name__ == '__main__':
