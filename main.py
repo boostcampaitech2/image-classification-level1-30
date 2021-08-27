@@ -48,10 +48,6 @@ def get_args_parser():
     # seed
     parser.add_argument('--seed', default=42, type=int)
 
-    # k-fold validation
-    parser.add_argument('--kfold', default=False, type=bool)
-    parser.add_argument('--splits', default=5, type=int)
-
     # checkpoints
 
     return parser
@@ -82,10 +78,7 @@ def main(args):
 
     # Loading traindataset
     train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
-    if args.kfold:
-        train_dataloader, val_loader = getKfoldDataloaders(dataset, batch_size, num_workers, train_idx, valid_idx)
-    else:
-        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # Model
     model = EfficientNet.from_pretrained('efficientnet-b0')
