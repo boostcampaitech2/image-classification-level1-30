@@ -75,11 +75,11 @@ def main(args):
     # image size: (384, 512)
     # image transformation
     transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Resize((224, 224)),
-        transforms.Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
+        transforms.Resize((224, 224)),        
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
     ])
 
     transform_albu = A.Compose(
