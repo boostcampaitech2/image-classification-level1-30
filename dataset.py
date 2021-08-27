@@ -59,7 +59,7 @@ class TrainDataset(Dataset):
             if self.index_transform == IDX_ALBU_TF:
                 image = cv2.cvtColor(cv2.imread(self.img_paths[index].strip()), cv2.COLOR_BGR2RGB)
                 image = self.transform(image=image)['image'] #dtype: uint8
-                image = transforms.ToTensor()(transforms.ToPILImage()(image)) #dtype FloatTensor
+                image = transforms.ToTensor()(image) #dtype FloatTensor
             else:
                 image = self.transform(Image.open(self.img_paths[index].strip()))
         else: #transform이 없을 경우   
@@ -77,7 +77,7 @@ class TrainDataset(Dataset):
             if self.index_transform == IDX_ALBU_TF:
                 image = cv2.cvtColor(cv2.imread(path_test_image), cv2.COLOR_BGR2RGB)
                 image = self.transform(image=image)['image']
-                image = transforms.ToTensor()(transforms.ToPILImage()(image))
+                image = transforms.ToTensor()(image)
             else:
                 image = self.transform(Image.open(path_test_image))
         fig, ax = plt.subplots(1, 2, figsize=(7, 4))
