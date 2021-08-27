@@ -22,7 +22,7 @@ from loss import Criterion
 from torchsummary import summary
 
 ## kfold
-from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 from kfoldtrain import *
 
 
@@ -36,7 +36,7 @@ def get_args_parser():
     parser.add_argument('--target', default='mask', type=str)
 
     # hyperparameters
-    parser.add_argument('--lr', default=1e-4, type=float)
+    parser.add_argument('--lr', default=1e-1, type=float)
     parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
@@ -72,7 +72,8 @@ def seed_everything(seed: int = 42):
 
 # 한 fold 당 모델을 initialize함
 def modelinit():
-    model = EfficientNet.from_pretrained('efficientnet-b0')
+    #TODO argparser로 모델 바꾸는거 가져와야함.
+    model = EfficientNet.from_pretrained('efficientnet-b7')
     in_features = model._fc.in_features
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
     return model
@@ -86,6 +87,7 @@ def main(args):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize((224, 224)),
+        transforms.Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
     ])
@@ -96,9 +98,9 @@ def main(args):
     criterion = Criterion()
     
     
-        
-    kfoldvalidator = KFold(n_splits=args.n_splits, shuffle=True)
-    for fold, (train_idx, val_idx) in enumerate(kfoldvalidator.split(train_dataset)):
+    
+    skf = StratifiedKFold(n_splits=args.n_splits)
+    for fold, (train_idx, val_idx) in enumerate(skf.split(train_dataset.img_paths, train_dataset.labels)):
         model = modelinit()
         # Optimizer
         if args.sgd:

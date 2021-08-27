@@ -58,7 +58,7 @@ def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, dev
 
         max_idx = torch.argmax(y_pred, dim=-1)
         loss_list.append(train_loss.detach().cpu().numpy())
-        metric_list.append(train_metric.detach().cpu().numpy())
+        metric_list.append(train_metric)
         acc = sum(target.detach().cpu().numpy()==max_idx.detach().cpu().numpy())/len(data)
         acc_list.append(acc)
 
@@ -84,7 +84,7 @@ def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, dev
 
             val_max_idx = torch.argmax(val_y_pred, dim=-1)
             val_loss_list.append(val_loss.detach().cpu().numpy())
-            val_metric_list.append(val_metric.detach().cpu().numpy())
+            val_metric_list.append(val_metric)
             val_acc = sum(val_target.detach().cpu().numpy()==val_max_idx.detach().cpu().numpy())/len(val_data)
             val_acc_list.append(val_acc)
 
@@ -99,7 +99,7 @@ def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, dev
     avg_val_loss = sum(val_loss_list)/len(val_loader)
     print(f"[Epoch {epoch}] Fold {fold} Train Accuracy: {avg_acc}\t F1 Score: {avg_metric}\t Loss: {avg_loss}")
     print(f"[Epoch {epoch}] Fold {fold} Validation Accuracy: {avg_val_acc}\t F1 Score: {avg_val_metric}\t Loss: {avg_val_loss}")
-    if min_loss > avg_loss and  min_val_loss > avg_val_loss:
-        torch.save(model, f'./checkpoints/Epoch{epoch}_Fold{fold}model.pt')
+    if min_val_loss > avg_val_loss:
+        torch.save(model, f'./checkpoints/Fold{fold}_Epoch{epoch}_{avg_val_acc:4.2%}_model.pt')
     return min(min_loss, avg_loss), min(min_val_loss, avg_val_loss)
 
