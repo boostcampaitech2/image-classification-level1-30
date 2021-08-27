@@ -14,6 +14,7 @@ class Criterion():
         assert y_true.ndim == 1
         assert y_pred.ndim == 1 or y_pred.ndim == 2
         
+
         if y_pred.ndim == 2:
             y_pred = y_pred.argmax(dim=1)
                 

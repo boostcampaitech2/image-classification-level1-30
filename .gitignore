@@ -4,4 +4,5 @@ __pycache__
 # Checkpoints
 checkpoints/
 
+# jupyter temp files
 .ipynb_checkpoints
