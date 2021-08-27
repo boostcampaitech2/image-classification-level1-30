@@ -32,7 +32,7 @@ def get_args_parser():
     parser.add_argument('--target', default='mask', type=str)
 
     # hyperparameters
-    parser.add_argument('--lr', default=1e-4, type=float)
+    parser.add_argument('--lr', default=1e-1, type=float)
     parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
@@ -75,6 +75,7 @@ def main(args):
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize((224, 224)),
+        transforms.Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
     ])

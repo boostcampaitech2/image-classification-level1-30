@@ -22,13 +22,13 @@ def train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss
 
         # Forward
         y_pred = model(x)
-
+        
         # Computing Loss
         train_loss, train_metric = criterion.loss_fn(target, y_pred)
 
         max_idx = torch.argmax(y_pred, dim=-1)
         loss_list.append(train_loss.detach().cpu().numpy())
-        metric_list.append(train_metric.detach().cpu().numpy())
+        metric_list.append(train_metric)
         acc = sum(target.detach().cpu().numpy()==max_idx.detach().cpu().numpy())/len(data)
         acc_list.append(acc)
 
