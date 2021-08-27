@@ -44,7 +44,6 @@ class Criterion():
         recall = tp / (tp + fn + epsilon)
         
         f1 = 2* (precision*recall) / (precision + recall + epsilon)
-        f1.requires_grad = is_training
         return f1
 
 
