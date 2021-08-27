@@ -21,6 +21,8 @@ from loss import Criterion
 
 from torchsummary import summary
 
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -75,6 +77,13 @@ def main(args):
         transforms.RandomVerticalFlip(),
     ])
 
+    transform_albu = A.Compose(
+    [  
+        A.Resize(224, 224),
+        A.HorizontalFlip(),
+        A.VerticalFlip(),
+    ])        
+    
     # Loading traindataset
     train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
