@@ -19,17 +19,26 @@ from train import train
 from model import EfficientNet
 from loss import Criterion
 
-from torchsummary import summary
 
-## kfold
+from torch.utils.tensorboard import SummaryWriter
+
+# kfold
 from sklearn.model_selection import StratifiedKFold
 from kfoldtrain import *
+
+# Albumentation
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Image Classification', add_help=False)
+
+    # choose model version
+    # larger the number larger the number of param choose from 0 to 7
+    parser.add_argument('--model', default=0, type=int)
 
     # number of classes
     parser.add_argument('--classes', default=18, type=int)
@@ -72,8 +81,7 @@ def seed_everything(seed: int = 42):
 
 # 한 fold 당 모델을 initialize함
 def modelinit():
-    #TODO argparser로 모델 바꾸는거 가져와야함.
-    model = EfficientNet.from_pretrained('efficientnet-b7')
+    model = EfficientNet.from_pretrained(f'efficientnet-b{args.model}')
     in_features = model._fc.in_features
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
     return model
@@ -92,16 +100,26 @@ def main(args):
         transforms.RandomVerticalFlip(),
     ])
 
+    transform_albu = A.Compose(
+    [  
+        A.Resize(224, 224),
+        A.HorizontalFlip(),
+        A.VerticalFlip(),
+    ])
+
+
     # Loading traindataset
-    train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
+    train_dataset = TrainDataset(transform=transform_albu, classes=args.classes, tr=args.target)
 
     criterion = Criterion()
+    
     
     
     
     skf = StratifiedKFold(n_splits=args.n_splits)
     for fold, (train_idx, val_idx) in enumerate(skf.split(train_dataset.img_paths, train_dataset.labels)):
         model = modelinit()
+        writer = SummaryWriter()
         # Optimizer
         if args.sgd:
             optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9,
@@ -112,13 +130,21 @@ def main(args):
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
         model.to(device)
         min_loss = 100
-        min_val_loss = 1000
+        min_val_loss = 100
+        global_step = 0
         train_dataloader, val_dataloader = getKfoldDataloaders(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, train_idx=train_idx, val_idx=val_idx)
         print(f'FOLD {fold}')
         for epoch in range(args.epochs):
             print(f"Epoch {epoch} training")
-            min_loss, min_val_loss = ktrain(model, train_dataloader, val_dataloader, optimizer, criterion, epoch, device, min_loss, min_val_loss, fold)
-
+            min_loss, min_val_loss, avg_acc, avg_metric, avg_loss, avg_val_acc, avg_val_metric, avg_val_loss = ktrain(model, train_dataloader, val_dataloader, optimizer, criterion, epoch, device, min_loss, min_val_loss, fold, writer, global_step)
+            writer.add_scalar(f"Fold{fold} Accuracy", avg_acc, epoch)
+            writer.add_scalar(f"Fold{fold} F-1 score", avg_metric, epoch)
+            writer.add_scalar(f"Fold{fold} Loss", avg_loss, epoch)
+            writer.add_scalar(f"Fold{fold} Validation Accuracy", avg_val_acc, epoch)
+            writer.add_scalar(f"Fold{fold} Validation F-1 score", avg_val_metric, epoch)
+            writer.add_scalar(f"Fold{fold} Validation Loss", avg_val_loss, epoch)
+            global_step +- 1
+        writer.flush()
 
     
         

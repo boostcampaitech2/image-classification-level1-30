@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import logging
 
 def getKfoldDataloaders(dataset, batch_size, num_workers, train_idx, val_idx):
     # 인자로 전달받은 dataset에서 train_idx에 해당하는 Subset 추출
@@ -38,7 +39,7 @@ def getKfoldDataloaders(dataset, batch_size, num_workers, train_idx, val_idx):
     return train_loader, val_loader
 
 
-def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, device, min_loss, min_val_loss, fold):
+def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, device, min_loss, min_val_loss, fold, writer, global_step):
     # For computing average of loss, metric, accuracy
     loss_list = []
     metric_list = []
@@ -57,6 +58,10 @@ def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, dev
         train_loss, train_metric = criterion.loss_fn(target, y_pred)
 
         max_idx = torch.argmax(y_pred, dim=-1)
+
+        if batch_idx % 10 == 0:
+            writer.add_images(f'step:{global_step}\ty_pred:[{max_idx[0:5]}\ty_atcual:[{target[0:5]}]]', data[0:5,:,:,:], global_step=global_step)
+
         loss_list.append(train_loss.detach().cpu().numpy())
         metric_list.append(train_metric)
         acc = sum(target.detach().cpu().numpy()==max_idx.detach().cpu().numpy())/len(data)
@@ -75,14 +80,18 @@ def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, dev
 
         model.eval()
 
-        for (val_data, val_target) in tqdm(val_loader):
+        for val_batch_idx, (val_data, val_target) in enumerate(tqdm(val_loader)):
             val_x, val_target = val_data.to(device), val_target.to(device)
 
             val_y_pred = model(val_x)
 
             val_loss, val_metric = criterion.loss_fn(val_target, val_y_pred)
-
             val_max_idx = torch.argmax(val_y_pred, dim=-1)
+
+            if val_batch_idx % 10 == 0:
+                writer.add_images(f'step:{global_step}\tval_y_pred:[{val_max_idx[0:5]}\tval_y_atcual:[{val_target[0:5]}]]', val_data[0:5,:,:,:], global_step=global_step)
+
+            
             val_loss_list.append(val_loss.detach().cpu().numpy())
             val_metric_list.append(val_metric)
             val_acc = sum(val_target.detach().cpu().numpy()==val_max_idx.detach().cpu().numpy())/len(val_data)
@@ -99,7 +108,12 @@ def ktrain(model, train_dataloader, val_loader, optimizer, criterion, epoch, dev
     avg_val_loss = sum(val_loss_list)/len(val_loader)
     print(f"[Epoch {epoch}] Fold {fold} Train Accuracy: {avg_acc}\t F1 Score: {avg_metric}\t Loss: {avg_loss}")
     print(f"[Epoch {epoch}] Fold {fold} Validation Accuracy: {avg_val_acc}\t F1 Score: {avg_val_metric}\t Loss: {avg_val_loss}")
+    
+    logging.basicConfig(filename=f'Fold{fold}_Performance.log',level=logging.INFO)
+    logging.info(f"[Epoch {epoch}] Train Accuracy: {avg_acc}\t F1 Score: {avg_metric}\t Loss: {avg_loss}/t Val Accuracy: {avg_val_acc}/t Val F1 Score: {avg_val_metric}/t Val Loss: {avg_val_loss}")
+    
+    
     if min_val_loss > avg_val_loss:
         torch.save(model, f'./checkpoints/Fold{fold}_Epoch{epoch}_{avg_val_acc:4.2%}_model.pt')
-    return min(min_loss, avg_loss), min(min_val_loss, avg_val_loss)
+    return min(min_loss, avg_loss), min(min_val_loss, avg_val_loss), avg_acc, avg_metric, avg_loss, avg_val_acc, avg_val_metric, avg_val_loss
 
