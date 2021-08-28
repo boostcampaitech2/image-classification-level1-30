@@ -19,14 +19,20 @@ from train import train
 from model import EfficientNet
 from loss import Criterion
 
-from torchsummary import summary
+from torch.utils.tensorboard import SummaryWriter
 
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Image Classification', add_help=False)
 
+    # choose model version
+    # larger the number larger the number of param choose from 0 to 7
+    parser.add_argument('--model', default=0, type=int)
+    
     # number of classes
     parser.add_argument('--classes', default=18, type=int)
     parser.add_argument('--target', default='mask', type=str)
@@ -69,19 +75,28 @@ def main(args):
     # image size: (384, 512)
     # image transformation
     transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Resize((224, 224)),
-        transforms.Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
+        transforms.Resize((224, 224)),        
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
     ])
+
+    transform_albu = A.Compose(
+    [  
+        A.Resize(224, 224),
+        A.HorizontalFlip(),
+        A.VerticalFlip(),
+    ])        
+    
+    writer = SummaryWriter()
 
     # Loading traindataset
     train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # Model
-    model = EfficientNet.from_pretrained('efficientnet-b0')
+    model = EfficientNet.from_pretrained(f'efficientnet-b{args.model}')
     in_features = model._fc.in_features
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
     # print(model)
@@ -100,11 +115,19 @@ def main(args):
 
     model.to(device)
     min_loss = 100
+    global_step = 0
     for epoch in range(args.epochs):
         # training
         # TODO: Logfile or Tensorboard 작성
         print(f"Epoch {epoch} training")
-        min_loss = train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss)
+        min_loss, avg_acc, avg_metric, avg_loss = train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss, writer, global_step)
+
+        writer.add_scalar("Accuracy", avg_acc, epoch)
+        writer.add_scalar("f-1 score", avg_metric, epoch)
+        writer.add_scalar("loss", avg_loss, epoch)
+        global_step += 1
+    
+    writer.flush()
         
 
 if __name__ == '__main__':
