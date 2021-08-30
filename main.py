@@ -19,12 +19,14 @@ from loss import Criterion
 
 from torch.utils.tensorboard import SummaryWriter
 
-
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 ## validation set
 from sklearn.model_selection import StratifiedShuffleSplit
+
+## time for tensorboard log
+from datetime import datetime
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -80,18 +82,20 @@ def main(args):
 
     transform = get_transform(args.tf)
 
-    writer = SummaryWriter()
+    now = datetime.now()
+    n_time = now.strftime("%m/%d_%H:%M")
+
+    writer = SummaryWriter(f'{n_time}_b{args.model}_tf:{args.tf}_lr:{args.lr}_bs:{args.batch_size}_epochs_{args.epochs}')
 
     # stratified validation set maker
     validation_splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
 
     # Loading traindataset
-    train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
+    train_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=True)
+    validation_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=False)
     
     # split train dataset with stratified shuffle split, return indices
-    for training_set_index, validation_set_index in validation_splitter.split(train_dataset.img_paths, train_dataset.labels):
-        train_set = torch.utils.data.Subset(train_dataset, indices=training_set_index)
-        validation_set = torch.utils.data.Subset(train_dataset, indices=validation_set_index)
+    
 
     # make dataloader
     train_dataloader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
@@ -112,7 +116,7 @@ def main(args):
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                       weight_decay=args.weight_decay)
 
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100, eta_min=0.001)
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0.0005)
 
 
     criterion = Criterion()

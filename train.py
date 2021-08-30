@@ -12,6 +12,9 @@ import logging
 
 
 def train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler):
+    # for saving models
+    global n_time
+    
     # For computing average of loss, metric, accuracy
     loss_list = []
     metric_list = []
@@ -89,5 +92,5 @@ def train(model, train_dataloader, validation_dataloader, optimizer, criterion, 
 
 
     if min_val_loss > val_avg_loss:
-        torch.save(model, f'./checkpoints/Epoch{epoch}_val_F1{val_avg_metric:.3f}_val_acc{val_avg_acc:4.2%}model.pt')
+        torch.save(model, f'./checkpoints/{n_time}_Epoch{epoch}_val_F1{val_avg_metric:.3f}_val_acc{val_avg_acc:4.2%}model.pt')
     return min(min_val_loss, val_avg_loss), avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss
