@@ -9,3 +9,9 @@ runs/
 
 # jupyter temp files
 .ipynb_checkpoints
+
+# shell scripts
+*.sh
+
+# log file
+*.log
