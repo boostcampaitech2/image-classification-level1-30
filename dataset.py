@@ -7,13 +7,12 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 import albumentations as A    #pip install -U albumentations
-from albumentations.pytorch import ToTensorV2
 import cv2
 
 from torchvision import transforms
-from torchvision.transforms import Resize, ToTensor, Normalize
+#from torchvision.transforms import Resize, ToTensor, Normalize
 
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 IDX_NONE_TF = 0  #Index of No Transfrom (Initial Value)
 IDX_TV_TF   = 1  #Index of TorchVision Transform
@@ -28,8 +27,7 @@ class TrainDataset(Dataset):
         self.img_paths = self.get_imgpath(classes, tr)
         self.labels = self.get_label(self.img_paths)
         self.classes = self.get_class(classes, tr)
-        if self.transform:    #transform이 있을 경우 Albumentation or TorchVision Transformation인지를 저장
-            self.index_transform = IDX_ALBU_TF if isinstance(self.transform, A.Compose) else IDX_TV_TF
+        self.index_transform = IDX_ALBU_TF if isinstance(self.transform, A.Compose) else IDX_TV_TF
         
     def get_label(self, paths):
         label_list = []
@@ -55,15 +53,12 @@ class TrainDataset(Dataset):
             return [str(i) for i in range(18)]
 
     def __getitem__(self, index):
-        if self.transform: #transform이 있을 경우 index에 따라 Albumantion Transformation or TorchVision transformation 적용
-            if self.index_transform == IDX_ALBU_TF:
-                image = cv2.cvtColor(cv2.imread(self.img_paths[index].strip()), cv2.COLOR_BGR2RGB)
-                image = self.transform(image=image)['image'] #dtype: uint8
-                image = transforms.ToTensor()(image) #dtype FloatTensor
-            else:
-                image = self.transform(Image.open(self.img_paths[index].strip()))
-        else: #transform이 없을 경우   
-            image = Image.open(self.img_paths[index].strip())
+        if self.index_transform == IDX_ALBU_TF:
+            image = cv2.cvtColor(cv2.imread(self.img_paths[index].strip()), cv2.COLOR_BGR2RGB)
+            image = self.transform(image=image)['image'] #dtype: uint8
+            # image = transforms.ToTensor()(image) #dtype FloatTensor
+        else:
+            image = self.transform(Image.open(self.img_paths[index].strip()))
             
         return image, self.classes.index(self.labels[index])
 
@@ -77,7 +72,7 @@ class TrainDataset(Dataset):
             if self.index_transform == IDX_ALBU_TF:
                 image = cv2.cvtColor(cv2.imread(path_test_image), cv2.COLOR_BGR2RGB)
                 image = self.transform(image=image)['image']
-                image = transforms.ToTensor()(image)
+                #image = transforms.ToTensor()(image)
             else:
                 image = self.transform(Image.open(path_test_image))
         fig, ax = plt.subplots(1, 2, figsize=(7, 4))

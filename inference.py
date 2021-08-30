@@ -1,12 +1,29 @@
 import os
 import pandas as pd
 from PIL import Image
+import argparse
+import cv2
+from tqdm import tqdm
 
 import torch
 from torch.utils.data import Dataset, DataLoader
 
 from torchvision import transforms
 from torchvision.transforms import Resize, ToTensor, Normalize
+
+from transformation import get_transform
+
+
+def get_args_parser():
+    parser = argparse.ArgumentParser('transformation', add_help=False)
+
+    # choose transform version
+    parser.add_argument('--tf', default='americano', type=str)
+
+    return parser
+
+parser = argparse.ArgumentParser(description='transformation', parents=[get_args_parser()])
+args = parser.parse_args()
 
 
 class TestDataset(Dataset):
@@ -15,10 +32,10 @@ class TestDataset(Dataset):
         self.transform = transform
 
     def __getitem__(self, index):
-        image = Image.open(self.img_paths[index])
+        image = cv2.cvtColor(cv2.imread(self.img_paths[index].strip()), cv2.COLOR_BGR2RGB)
 
         if self.transform:
-            image = self.transform(image)
+            image = self.transform(image=image)['image']
         return image
 
     def __len__(self):
@@ -39,11 +56,8 @@ image_dir = os.path.join(test_dir, 'images')
 
 # Test Dataset 클래스 객체, DataLoader를 생성
 image_paths = [os.path.join(image_dir, img_id) for img_id in submission.ImageID]
-transform = transforms.Compose([
-    Resize((224, 224), Image.BILINEAR),
-    ToTensor(),
-    Normalize(mean=(0.558, 0.512, 0.478), std=(0.218, 0.238, 0.252)),
-])
+
+transform = get_transform(args.tf+'_infer')
 
 dataset = TestDataset(image_paths, transform)
 
@@ -55,7 +69,7 @@ loader = DataLoader(
 
 # 결과 예측
 all_predictions = []
-for images in loader:
+for images in tqdm(loader):
     with torch.no_grad():
         images = images.to(device)
         pred = model(images)
