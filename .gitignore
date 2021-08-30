@@ -4,5 +4,8 @@ __pycache__
 # Checkpoints
 checkpoints/
 
+# training log
+runs/
+
 # jupyter temp files
 .ipynb_checkpoints
