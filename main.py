@@ -24,6 +24,10 @@ from torch.utils.tensorboard import SummaryWriter
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
+## validation set
+from sklearn.model_selection import StratifiedShuffleSplit
+
+
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
@@ -44,8 +48,6 @@ def get_args_parser():
     parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
-    parser.add_argument('--lr_drop', default=40, type=int)
-    parser.add_argument('--lr_drop_epochs', default=None, type=int, nargs='+')
 
     # resume
     parser.add_argument('--resume', default=False, type=bool)
@@ -91,9 +93,20 @@ def main(args):
     
     writer = SummaryWriter()
 
+    # stratified validation set maker
+    validation_splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
+
     # Loading traindataset
     train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+    
+    # split train dataset with stratified shuffle split, return indices
+    for training_set_index, validation_set_index in validation_splitter.split(train_dataset.img_paths, train_dataset.labels):
+        train_set = torch.utils.data.Subset(train_dataset, indices=training_set_index)
+        validation_set = torch.utils.data.Subset(train_dataset, indices=validation_set_index)
+
+    # make dataloader
+    train_dataloader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+    validation_dataloader = DataLoader(validation_set, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     # Model
     model = EfficientNet.from_pretrained(f'efficientnet-b{args.model}')
@@ -109,22 +122,25 @@ def main(args):
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                       weight_decay=args.weight_decay)
 
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100, eta_min=0.001)
+
 
     criterion = Criterion()
 
     model.to(device)
-    min_loss = 100
+    min_val_loss = 100
     global_step = 0
     for epoch in range(args.epochs):
         # training
-        # TODO: Logfile or Tensorboard 작성
         print(f"Epoch {epoch} training")
-        min_loss, avg_acc, avg_metric, avg_loss = train(model, train_dataloader, optimizer, criterion, epoch, device, min_loss, writer, global_step)
+        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler)
 
-        writer.add_scalar("Accuracy", avg_acc, epoch)
-        writer.add_scalar("f-1 score", avg_metric, epoch)
-        writer.add_scalar("loss", avg_loss, epoch)
+        writer.add_scalar("Training Accuracy", avg_acc, epoch)
+        writer.add_scalar("Training F1 score", avg_metric, epoch)
+        writer.add_scalar("Training Loss", avg_loss, epoch)
+        writer.add_scalar("Validation Accuracy", val_avg_acc, epoch)
+        writer.add_scalar("Validation F1 score", val_avg_metric, epoch)
+        writer.add_scalar("Validation Loss", val_avg_loss, epoch)
         global_step += 1
     
     writer.flush()
