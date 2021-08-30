@@ -48,8 +48,6 @@ def get_args_parser():
     parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
-    parser.add_argument('--lr_drop', default=40, type=int)
-    parser.add_argument('--lr_drop_epochs', default=None, type=int, nargs='+')
 
     # resume
     parser.add_argument('--resume', default=False, type=bool)
@@ -124,7 +122,8 @@ def main(args):
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                       weight_decay=args.weight_decay)
 
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100, eta_min=0.001)
+
 
     criterion = Criterion()
 
@@ -134,7 +133,7 @@ def main(args):
     for epoch in range(args.epochs):
         # training
         print(f"Epoch {epoch} training")
-        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step)
+        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler)
 
         writer.add_scalar("Training Accuracy", avg_acc, epoch)
         writer.add_scalar("Training F1 score", avg_metric, epoch)

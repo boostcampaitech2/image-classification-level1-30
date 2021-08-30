@@ -11,7 +11,7 @@ import torchvision
 import logging
 
 
-def train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step):
+def train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler):
     # For computing average of loss, metric, accuracy
     loss_list = []
     metric_list = []
@@ -44,6 +44,7 @@ def train(model, train_dataloader, validation_dataloader, optimizer, criterion, 
         optimizer.zero_grad()
         train_loss.backward()
         optimizer.step()
+        lr_scheduler.step()
     
 
     # Validation
