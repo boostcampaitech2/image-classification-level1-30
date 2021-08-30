@@ -84,6 +84,7 @@ def main(args):
     # Model
     model = EfficientNet.from_pretrained(f'efficientnet-b{args.model}')
     in_features = model._fc.in_features
+    # 여기다가 frezzing
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
     # print(model)
 
