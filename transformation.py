@@ -17,6 +17,18 @@ def get_transform(t_name):
         ])
         return t
 
+    elif t_name == 'sparkling_water':
+        t = A.Compose(
+        [   
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.HorizontalFlip(),
+            A.VerticalFlip(),
+            A.Normalize(mean=0, std=1),
+            ToTensorV2(),
+        ])
+        return t
+
     elif t_name =='americano':
         t = A.Compose(
         [
@@ -50,7 +62,7 @@ def get_transform(t_name):
         ])
         return t
 
-    elif t_name == 'americano_infer':
+    elif t_name == 'americano_infer' or t_name=='sparkling_water_infer':
         t = A.Compose(
         [
             A.CenterCrop(height=400, width=384),
