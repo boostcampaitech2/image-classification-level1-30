@@ -26,6 +26,8 @@ from albumentations.pytorch import ToTensorV2
 ## validation set
 from sklearn.model_selection import StratifiedShuffleSplit
 
+from early_stopping import EarlyStopping
+
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
@@ -58,6 +60,10 @@ def get_args_parser():
     parser.add_argument('--seed', default=42, type=int)
 
     # checkpoints
+
+    # early-stopping
+    parser.add_argument('--es', default=True, type=bool)
+    parser.add_argument('--patience', default=4, type=int)
 
     return parser
 
@@ -120,10 +126,16 @@ def main(args):
     model.to(device)
     min_val_loss = 100
     global_step = 0
+
+    if args.es:
+        early_stopping = EarlyStopping(patience=args.patience, verbose=True, path=f'./checkpoints/model{args.model}_early_stopped_checkpoint.pt')
+    else:
+        early_stopping = None
+
     for epoch in range(args.epochs):
         # training
         print(f"Epoch {epoch} training")
-        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler)
+        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping)
 
         writer.add_scalar("Training Accuracy", avg_acc, epoch)
         writer.add_scalar("Training F1 score", avg_metric, epoch)
@@ -132,7 +144,11 @@ def main(args):
         writer.add_scalar("Validation F1 score", val_avg_metric, epoch)
         writer.add_scalar("Validation Loss", val_avg_loss, epoch)
         global_step += 1
-    
+
+        if early_stopping.early_stop:
+            print(f"[Epoch {epoch}] Early stopped")
+            break
+
     writer.flush()
         
 
