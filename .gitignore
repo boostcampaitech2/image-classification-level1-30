@@ -12,3 +12,6 @@ runs/
 
 # shell scripts
 *.sh
+
+# log file
+*.log
