@@ -51,7 +51,7 @@ def get_args_parser():
     parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
-    parser.add_argument('--num_workers', default=1, type=int)
+    parser.add_argument('--num_workers', default=5, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--scheduler', default='cosine', type=str)
 
@@ -101,7 +101,7 @@ def main(args):
 
     # Loading traindataset
     train_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=True)
-    validation_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=False)
+    validation_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target+'_infer', train=False)
     
     # split train dataset with stratified shuffle split, return indices
     
