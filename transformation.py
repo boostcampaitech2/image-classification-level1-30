@@ -51,6 +51,28 @@ def get_transform(t_name):
         ])
         return t
 
+    elif t_name == 'yogurt':
+        t = A.Compose(
+        [
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ToTensorV2(),
+        ])
+        return t
+
+    elif t_name == 'blueberry_yogurt':
+        t = A.Compose(
+        [
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.GaussianBlur(p=0.2),
+            A.Cutout(num_holes=8, max_h_size=8, max_w_size=8),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ToTensorV2(),
+        ])
+        return t
+
     # inference
 
     elif t_name == 'water_infer':
@@ -72,7 +94,7 @@ def get_transform(t_name):
         ])
         return t
 
-    elif t_name == 'latte_infer':
+    elif t_name == 'latte_infer' or t_name == 'blueberry_yogurt_infer' or t_name == 'yogurt_infer':
         t = A.Compose(
         [
             A.CenterCrop(height=400, width=384),

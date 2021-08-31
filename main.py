@@ -27,6 +27,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 ## time for tensorboard log
 from datetime import datetime
+
 from early_stopping import EarlyStopping
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -52,6 +53,7 @@ def get_args_parser():
     parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
+    parser.add_argument('--scheduler', default='cosine', type=str)
 
     # resume
     parser.add_argument('--resume', default=False, type=bool)
@@ -88,9 +90,11 @@ def main(args):
     transform = get_transform(args.tf)
 
     now = datetime.now()
-    n_time = now.strftime("%m/%d_%H:%M")
+    n_time = now.strftime("%m_%d_%H:%M")
+    # Convert time zone
+    
 
-    writer = SummaryWriter(f'{n_time}_b{args.model}_tf:{args.tf}_lr:{args.lr}_bs:{args.batch_size}_epochs_{args.epochs}')
+    writer = SummaryWriter(f'runs/{n_time}_b{args.model}_tf:{args.tf}_lr:{args.lr}_bs:{args.batch_size}_epochs_{args.epochs}')
 
     # stratified validation set maker
     validation_splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
@@ -121,8 +125,12 @@ def main(args):
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                       weight_decay=args.weight_decay)
 
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0.0005)
-
+    
+    if args.scheduler == 'cosine':
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0.0005)
+    elif args.scheduler == 'multiply':
+        lmbda = lambda epoch: 0.98739
+        lr_scheduler = torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda=lmbda)
 
     criterion = Criterion()
 
@@ -138,7 +146,7 @@ def main(args):
     for epoch in range(args.epochs):
         # training
         print(f"Epoch {epoch} training")
-        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping)
+        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping, n_time)
 
         writer.add_scalar("Training Accuracy", avg_acc, epoch)
         writer.add_scalar("Training F1 score", avg_metric, epoch)
