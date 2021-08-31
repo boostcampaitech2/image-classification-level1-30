@@ -19,12 +19,13 @@ IDX_TV_TF   = 1  #Index of TorchVision Transform
 IDX_ALBU_TF = 2  #Index of Albumentation Transform
 
 class TrainDataset(Dataset):
-    def __init__(self,  transform=None, classes=18, tr='mask'):
+    def __init__(self,  transform=None, classes=18, tr='mask', train=True):
         super().__init__()
         self.cls = classes
         self.tr = tr
+        self.train = train
         self.transform = transform
-        self.img_paths = self.get_imgpath(classes, tr)
+        self.img_paths = self.get_imgpath(classes, tr, train)
         self.labels = self.get_label(self.img_paths)
         self.classes = self.get_class(classes, tr)
         self.index_transform = IDX_ALBU_TF if isinstance(self.transform, A.Compose) else IDX_TV_TF
@@ -35,11 +36,17 @@ class TrainDataset(Dataset):
             label_list.append(p.split('/')[-2])
         return label_list
 
-    def get_imgpath(self, cls, tr):
-        if cls == 18:
-            return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class', '*/**'))
+    def get_imgpath(self, cls, tr, train):
+        if train == True:
+            if cls == 18:
+                return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class', '*/**'))
+            else:
+                return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class/{tr}', '*/**'))
         else:
-            return glob(os.path.join(f'/opt/ml/input/data/train_{cls}class/{tr}', '*/**'))
+            if cls == 18:
+                return glob(os.path.join(f'/opt/ml/input/data/val_{cls}class', '*/**'))
+            else:
+                return glob(os.path.join(f'/opt/ml/input/data/val_{cls}class/{tr}', '*/**'))
 
     def get_class(self, cls, tr):
         if cls == 3 or cls == 2:

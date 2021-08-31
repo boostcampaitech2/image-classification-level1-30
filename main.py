@@ -19,12 +19,14 @@ from loss import Criterion
 
 from torch.utils.tensorboard import SummaryWriter
 
-
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 ## validation set
 from sklearn.model_selection import StratifiedShuffleSplit
+
+## time for tensorboard log
+from datetime import datetime
 
 from early_stopping import EarlyStopping
 
@@ -51,6 +53,7 @@ def get_args_parser():
     parser.add_argument('--sgd', default=False, type=bool)
     parser.add_argument('--num_workers', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
+    parser.add_argument('--scheduler', default='cosine', type=str)
 
     # resume
     parser.add_argument('--resume', default=False, type=bool)
@@ -86,18 +89,22 @@ def main(args):
 
     transform = get_transform(args.tf)
 
-    writer = SummaryWriter()
+    now = datetime.now()
+    n_time = now.strftime("%m_%d_%H:%M")
+    # Convert time zone
+    
+
+    writer = SummaryWriter(f'runs/{n_time}_b{args.model}_tf:{args.tf}_lr:{args.lr}_bs:{args.batch_size}_epochs_{args.epochs}')
 
     # stratified validation set maker
     validation_splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
 
     # Loading traindataset
-    train_dataset = TrainDataset(transform=transform, classes=args.classes, tr=args.target)
+    train_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=True)
+    validation_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=False)
     
     # split train dataset with stratified shuffle split, return indices
-    for training_set_index, validation_set_index in validation_splitter.split(train_dataset.img_paths, train_dataset.labels):
-        train_set = torch.utils.data.Subset(train_dataset, indices=training_set_index)
-        validation_set = torch.utils.data.Subset(train_dataset, indices=validation_set_index)
+    
 
     # make dataloader
     train_dataloader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
@@ -118,8 +125,12 @@ def main(args):
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                       weight_decay=args.weight_decay)
 
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100, eta_min=0.001)
-
+    
+    if args.scheduler == 'cosine':
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0.0005)
+    elif args.scheduler == 'multiply':
+        lmbda = lambda epoch: 0.98739
+        lr_scheduler = torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda=lmbda)
 
     criterion = Criterion()
 
@@ -135,7 +146,7 @@ def main(args):
     for epoch in range(args.epochs):
         # training
         print(f"Epoch {epoch} training")
-        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping)
+        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping, n_time)
 
         writer.add_scalar("Training Accuracy", avg_acc, epoch)
         writer.add_scalar("Training F1 score", avg_metric, epoch)

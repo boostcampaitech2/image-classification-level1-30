@@ -45,7 +45,7 @@ class TestDataset(Dataset):
 # 모델 불러오기
 test_dir = '/opt/ml/input/data/eval'
 device = torch.device('cuda')
-model = torch.load('./checkpoints/model.pt').to(device)
+model = torch.load('./checkpoints/Epoch31_val_F10.848_val_acc91.68%model.pt').to(device)
 print(model)
 model.eval()
 
@@ -78,5 +78,5 @@ for images in tqdm(loader):
 submission['ans'] = all_predictions
 
 # 제출할 파일 저장
-submission.to_csv(os.path.join(test_dir, 'submission.csv'), index=False)
+submission.to_csv(os.path.join(test_dir, 'Epoch31_val_F10.848_val_acc91.68%model.csv'), index=False)
 print('test inference is done!')
