@@ -4,6 +4,7 @@ from PIL import Image
 import argparse
 import cv2
 from tqdm import tqdm
+import numpy as np
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -55,7 +56,12 @@ submission = pd.read_csv(os.path.join(test_dir, 'info.csv'))
 image_dir = os.path.join(test_dir, 'images')
 
 # Test Dataset 클래스 객체, DataLoader를 생성
-image_paths = [os.path.join(image_dir, img_id) for img_id in submission.ImageID]
+image_paths = []
+temp_paths = [str(os.path.join(image_dir, img_id)) for img_id in submission.ImageID]
+
+for img_path in temp_paths:
+    for i in range(3):
+        image_paths.append(img_path)
 
 transform = get_transform(args.tf+'_infer')
 
@@ -69,12 +75,21 @@ loader = DataLoader(
 
 # 결과 예측
 all_predictions = []
+step = 0
+preds = []
 for images in tqdm(loader):
     with torch.no_grad():
         images = images.to(device)
-        pred = model(images)
-        pred = pred.argmax(dim=-1)
-        all_predictions.extend(pred.cpu().numpy())
+        # 여기서 확률 나옴
+        preds.append(model(images))
+        # 여기서 클래스 결정
+        # pred = pred.argmax(dim=-1)
+        if step % 3 == 2:
+            pred = np.sum(preds, axis=0)
+            pred = pred.argmax(dim=-1)
+            all_predictions.extend(pred.cpu().numpy())
+            preds = []
+        step += 1
 submission['ans'] = all_predictions
 
 # 제출할 파일 저장

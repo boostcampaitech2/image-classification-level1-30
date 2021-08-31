@@ -58,6 +58,11 @@ def get_transform(t_name):
         [
             A.Resize(224, 224),
             A.Normalize(mean=0, std=1),
+            A.OneOf([
+                A.MotionBlur(p=1),
+                A.OpticalDistortion(p=1),
+                A.GaussNoise(p=1)
+            ], p=1),
             ToTensorV2(),
         ])
         return t
@@ -68,6 +73,11 @@ def get_transform(t_name):
             A.CenterCrop(height=400, width=384),
             A.Resize(224, 224),
             A.Normalize(mean=0, std=1),
+            A.OneOf([
+                A.MotionBlur(p=1),
+                A.OpticalDistortion(p=1),
+                A.GaussNoise(p=1)
+            ], p=1),
             ToTensorV2(),
         ])
         return t
@@ -78,6 +88,11 @@ def get_transform(t_name):
             A.CenterCrop(height=400, width=384),
             A.Resize(224, 224),
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.OneOf([
+                A.MotionBlur(p=1),
+                A.OpticalDistortion(p=1),
+                A.GaussNoise(p=1)
+            ], p=1),
             ToTensorV2(),
         ])
         return t

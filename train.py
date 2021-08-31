@@ -89,7 +89,7 @@ def train(model, train_dataloader, validation_dataloader, optimizer, criterion, 
 
 
     if min_val_loss > val_avg_loss:
-        torch.save(model, f'./checkpoints/Epoch{epoch}_val_F1{val_avg_metric:.3f}_val_acc{val_avg_acc:4.2%}model.pt')
+        torch.save(model, f'./checkpoints/model.pt')
 
     if early_stopping is not None:
         early_stopping(val_avg_loss, model)
