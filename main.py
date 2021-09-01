@@ -13,9 +13,8 @@ from dataset import TrainDataset
 from loss import Criterion
 from train import train
 from transformation import get_transform
-
 from model import EfficientNet
-from loss import Criterion
+from label_smoothing_loss import LabelSmoothing
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -47,7 +46,7 @@ def get_args_parser():
     parser.add_argument('--tf', default='americano', type=str)
 
     # hyperparameters
-    parser.add_argument('--lr', default=1e-1, type=float)
+    parser.add_argument('--lr', default=0.01, type=float)
     parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--epochs', default=30, type=int)
     parser.add_argument('--sgd', default=False, type=bool)
@@ -67,6 +66,10 @@ def get_args_parser():
     # early-stopping
     parser.add_argument('--es', default=True, type=bool)
     parser.add_argument('--patience', default=4, type=int)
+
+    # label-smoothing
+    parser.add_argument('--label_smoothing', default=True, type=bool)
+    parser.add_argument('--smoothing_level', default=0.1, type=float)
 
     return parser
 
@@ -132,14 +135,18 @@ def main(args):
         lmbda = lambda epoch: 0.98739
         lr_scheduler = torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda=lmbda)
 
-    criterion = Criterion()
+
+    if args.label_smoothing:
+        criterion = LabelSmoothing(args.smoothing_level)
+    else:
+        criterion = Criterion()
 
     model.to(device)
     min_val_loss = 100
     global_step = 0
 
     if args.es:
-        early_stopping = EarlyStopping(patience=args.patience, verbose=True, path=f'./checkpoints/model{args.model}_early_stopped_checkpoint.pt')
+        early_stopping = EarlyStopping(patience=args.patience, verbose=True, path=f'./checkpoints/{n_time}_model{args.model}_early_stopped_checkpoint.pt')
     else:
         early_stopping = None
 

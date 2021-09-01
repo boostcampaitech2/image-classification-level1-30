@@ -22,6 +22,7 @@ def get_args_parser():
 
     # choose transform version
     parser.add_argument('--tf', default='americano', type=str)
+    parser.add_argument('--tta', default=False, type=bool)
 
     return parser
 
