@@ -104,3 +104,24 @@ def get_transform(t_name):
         ])
         return t
     
+    elif t_name == 'TTABLUR':
+        t =  A.Compose(
+        [
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.GaussianBlur(),
+            ToTensorV2(),
+        ])
+        return t
+    
+    elif t_name == "TTACOMPRESS":
+        t =  A.Compose(
+        [
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.ImageCompression(),
+            ToTensorV2(),
+        ])
+        return t
