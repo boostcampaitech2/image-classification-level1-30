@@ -4,7 +4,6 @@ from PIL import Image
 import argparse
 import cv2
 from tqdm import tqdm
-import numpy as np
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -13,8 +12,6 @@ from torchvision import transforms
 from torchvision.transforms import Resize, ToTensor, Normalize
 
 from transformation import get_transform
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 
 
 def get_args_parser():
@@ -33,24 +30,16 @@ class TestDataset(Dataset):
     def __init__(self, img_paths, transform):
         self.img_paths = img_paths
         self.transform = transform
-        self.trans1 = get_transform('TTABLUR')
-        self.trans2 = get_transform('TTACOMPRESS')
 
     def __getitem__(self, index):
-        image = cv2.cvtColor(cv2.imread(self.img_paths[int(index/3)].strip()), cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor(cv2.imread(self.img_paths[index].strip()), cv2.COLOR_BGR2RGB)
 
-        tmp = index % 3
-        if tmp == 0:
+        if self.transform:
             image = self.transform(image=image)['image']
-        elif tmp == 1:
-            image = self.trans1(image=image)['image']
-        else:
-            image = self.trans2(image=image)['image']
-
         return image
 
     def __len__(self):
-        return len(self.img_paths) * 3
+        return len(self.img_paths)
 
 
 # 모델 불러오기
@@ -74,22 +63,20 @@ dataset = TestDataset(image_paths, transform)
 
 loader = DataLoader(
     dataset,
-    batch_size=3,
+    batch_size=1,
     shuffle=False
 )
 
 # 결과 예측
 all_predictions = []
-
 for images in tqdm(loader):
     with torch.no_grad():
         images = images.to(device)
         pred = model(images)
-        pred = torch.mean(pred, axis=-2)
         pred = pred.argmax(dim=-1)
-        all_predictions.append(pred.cpu().numpy())
+        all_predictions.extend(pred.cpu().numpy())
 submission['ans'] = all_predictions
 
 # 제출할 파일 저장
-submission.to_csv(os.path.join(test_dir, 'submission.csv'), index=False)
+submission.to_csv(os.path.join(test_dir, 'submission_NoTTA.csv'), index=False)
 print('test inference is done!')
