@@ -45,7 +45,7 @@ class TestDataset(Dataset):
 # 모델 불러오기
 test_dir = '/opt/ml/input/data/eval'
 device = torch.device('cuda')
-model = torch.load('./checkpoints/09_01_05:45_Epoch1_val_F10.556_val_acc72.05%model.pt').to(device)
+model = torch.load('./checkpoints/09_01_14:50_Epoch3_val_F10.773_val_acc87.25%model.pt').to(device)
 print(model)
 model.eval()
 
@@ -64,7 +64,8 @@ dataset = TestDataset(image_paths, transform)
 loader = DataLoader(
     dataset,
     batch_size=1,
-    shuffle=False
+    shuffle=False,
+    num_workers=4
 )
 
 # 결과 예측

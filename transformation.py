@@ -115,13 +115,36 @@ def get_transform(t_name):
         ])
         return t
     
-    elif t_name == "TTACOMPRESS":
+    elif t_name == 'TTAContrast':
         t =  A.Compose(
         [
             A.CenterCrop(height=400, width=384),
             A.Resize(224, 224),
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            A.ImageCompression(),
+            A.RandomBrightnessContrast(),
+            ToTensorV2(),
+        ])
+        return t
+
+    elif t_name == 'TTAFlipped':
+        t =  A.Compose(
+        [
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.HorizontalFlip(),
+            ToTensorV2(),
+        ])
+        return t
+
+    elif t_name == 'TTABright':
+        t =  A.Compose(
+        [
+            A.CenterCrop(height=400, width=384),
+            A.Resize(224, 224),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.GaussianBlur(),
+            A.HorizontalFlip(),
             ToTensorV2(),
         ])
         return t
