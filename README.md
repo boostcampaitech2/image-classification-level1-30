@@ -4,9 +4,10 @@
 Our Project requires Python latest version. Install the latest Python version.
 
 ```
+git clone https://github.com/boostcampaitech2/image-classification-level1-30.git
 pip install -r requirements.txt
 ```
-Clone our GitHub and install all packages for out project.
+Clone our GitHub repository and install all required packages for our project.
 
 ## Function Description
 `main.py`: main 함수
