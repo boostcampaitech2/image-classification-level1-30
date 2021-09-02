@@ -73,7 +73,7 @@ class TestDataset(Dataset):
 # 모델 불러오기
 test_dir = '/opt/ml/input/data/eval'
 device = torch.device('cuda')
-model = torch.load('./checkpoints/09_01_06:03_Epoch4_val_F10.680_val_acc79.27%model.pt').to(device)
+model = torch.load('./checkpoints/09_02_02:25_Epoch10_val_F10.814_val_acc89.99%model.pt').to(device)
 # print(model)
 model.eval()
 
