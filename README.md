@@ -1,13 +1,25 @@
-# Image-classification-level1-30
+# :mask: Image-classification-level1-30
+
+## :floppy_disk: Main Subject
 
 ## :floppy_disk: Installation
-Our Project requires Python latest version. Install the latest Python version.
+**1. Set up the python environment:**
+
+  - Python = 3.6
+  - torch = 1.2.0
+  - torchVison = 0.4.0
+  - OpenCV-python = 4.1.1.26
+  - pillow = 6.2.1
+  - vispy = 0.6.3
+  - scipy = 1.1.0
+  - minSdkVersion: 23
+  - targetSdkVersion: 29
+  - JAVA jdk: 1.8.0_241
 
 ```
 $ git clone https://github.com/boostcampaitech2/image-classification-level1-30.git
 $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 ```
-Clone our GitHub repository and install all required packages for our project.
 
 ## Function Description
 `main.py`: main 함수
