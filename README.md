@@ -1,6 +1,6 @@
 # Image-classification-level1-30
 
-## Installation
+## :floppy_disk: Installation
 Our Project requires Python latest version. Install the latest Python version.
 
 ```
