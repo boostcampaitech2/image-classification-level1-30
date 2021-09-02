@@ -68,7 +68,7 @@ def get_args_parser():
     parser.add_argument('--patience', default=4, type=int)
 
     # label-smoothing
-    parser.add_argument('--label_smoothing', default=True, type=bool)
+    parser.add_argument('--label_smoothing', default=False, type=bool)
     parser.add_argument('--smoothing_level', default=0.1, type=float)
 
     return parser
