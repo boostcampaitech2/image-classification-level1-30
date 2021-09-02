@@ -29,6 +29,7 @@ from datetime import datetime
 
 from early_stopping import EarlyStopping
 
+
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
@@ -61,17 +62,21 @@ def get_args_parser():
     # seed
     parser.add_argument('--seed', default=42, type=int)
 
-    # checkpoints
-
     # early-stopping
     parser.add_argument('--es', default=True, type=bool)
     parser.add_argument('--patience', default=4, type=int)
 
     # label-smoothing
-    parser.add_argument('--label_smoothing', default=False, type=bool)
+    parser.add_argument('--label_smoothing', action='store_true')
     parser.add_argument('--smoothing_level', default=0.1, type=float)
 
+    # cut_mix
+    parser.add_argument('--cut_mix', action='store_true')
+    parser.add_argument('--beta', default=1.0, type=float, help='hyperparameter beta')
+    parser.add_argument('--cutmix_prob', default=0.5, type=float, help='cutmix probability')
+
     return parser
+
 
 # 하나의 seed로 고정
 def seed_everything(seed: int = 42):
@@ -84,18 +89,20 @@ def seed_everything(seed: int = 42):
         torch.backends.cudnn.deterministic = True  # type: ignore
         torch.backends.cudnn.benchmark = True      
 
+
 def main(args):
     if not os.path.isdir(os.path.join(os.getcwd(), 'checkpoints')):
         os.mkdir(os.path.join(os.getcwd(), 'checkpoints'))
-    # image size: (384, 512)
-    # image transformation
 
+    if args.cut_mix and not os.path.isdir(os.path.join(os.getcwd(), 'checkpoints', 'cut_mix')):
+        os.mkdir(os.path.join(os.getcwd(), 'checkpoints', 'cut_mix'))
+
+    # image transformation
     transform = get_transform(args.tf)
 
+    # Convert time zone
     now = datetime.now()
     n_time = now.strftime("%m_%d_%H:%M")
-    # Convert time zone
-    
 
     writer = SummaryWriter(f'runs/{n_time}_b{args.model}_tf:{args.tf}_lr:{args.lr}_bs:{args.batch_size}_epochs_{args.epochs}')
 
@@ -105,9 +112,6 @@ def main(args):
     # Loading traindataset
     train_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=True)
     validation_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target+'_infer', train=False)
-    
-    # split train dataset with stratified shuffle split, return indices
-    
 
     # make dataloader
     train_dataloader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
@@ -116,7 +120,6 @@ def main(args):
     # Model
     model = EfficientNet.from_pretrained(f'efficientnet-b{args.model}')
     in_features = model._fc.in_features
-    # 여기다가 frezzing
     model._fc = nn.Linear(in_features=in_features, out_features=args.classes)
     # print(model)
 
@@ -127,7 +130,6 @@ def main(args):
     else:
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                       weight_decay=args.weight_decay)
-
     
     if args.scheduler == 'cosine':
         lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100, eta_min=0.001)
@@ -135,25 +137,27 @@ def main(args):
         lmbda = lambda epoch: 0.98739
         lr_scheduler = torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda=lmbda)
 
-
     if args.label_smoothing:
         criterion = LabelSmoothing(args.smoothing_level)
     else:
         criterion = Criterion()
 
     model.to(device)
-    min_val_loss = 100
+    min_val_loss = 1e9
     global_step = 0
 
     if args.es:
-        early_stopping = EarlyStopping(patience=args.patience, verbose=True, path=f'./checkpoints/{n_time}_model{args.model}_early_stopped_checkpoint.pt')
+        if args.cut_mix:
+            early_stopping = EarlyStopping(patience=args.patience, verbose=True, path=f'./checkpoints/cut_mix/{n_time}_model{args.model}_early_stopped_checkpoint.pt')
+        else:
+            early_stopping = EarlyStopping(patience=args.patience, verbose=True, path=f'./checkpoints/{n_time}_model{args.model}_early_stopped_checkpoint.pt')
     else:
         early_stopping = None
 
     for epoch in range(args.epochs):
         # training
         print(f"Epoch {epoch} training")
-        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping, n_time)
+        min_val_loss, avg_acc, avg_metric, avg_loss, val_avg_acc, val_avg_metric, val_avg_loss = train(model, train_dataloader, validation_dataloader, optimizer, criterion, epoch, device, min_val_loss, writer, global_step, lr_scheduler, early_stopping, args, n_time)
 
         writer.add_scalar("Training Accuracy", avg_acc, epoch)
         writer.add_scalar("Training F1 score", avg_metric, epoch)
