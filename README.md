@@ -6,7 +6,7 @@ Our Project requires Python latest version. Install the latest Python version.
 ```
 pip install -r requirements.txt
 ```
-To install all packages for out project.
+Clone our GitHub and install all packages for out project.
 
 ## Function Description
 `main.py`: main 함수
