@@ -1,7 +1,7 @@
 # Image-classification-level1-30
 
 ## Installation
-Our Project requires Python 3.6 or higher. Install the latest Python version.
+Our Project requires Python latest version. Install the latest Python version.
 
 ```
 pip install -r requirements.txt
