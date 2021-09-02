@@ -1,6 +1,6 @@
 # :mask: Image-classification-level1-30
 
-## :floppy_disk: Main Subject
+## 📖 Main Subject
 
 ## :floppy_disk: Installation
 **1. Set up the python environment:**
