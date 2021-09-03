@@ -32,29 +32,29 @@ $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 <br/>
 
 ## Function Description
-`main.py`: main 함수
+`main.py`: main module that combines and runs all other sub-modules
 
-`train.py`: 한 epoch를 학습시키는 코드
+`train.py`: trains the model by iterating through specific number of epochs
 
-`model.py`: EfficientNet 클래스가 포함된 코드
+`model.py`: EfficientNet model from [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch)
 
-`inference.py`: 추론합니다
+`inference.py`: tests the model using the test dataset and outputs the inferred csv file
 
-`loss.py`: loss 함수와 f1_score metric 계산이 포함된 클래스
+`loss.py`: caculates loss using cross entropy and f1-score
 
-`label_smoothing_loss.py`:
+`label_smoothing_loss.py`: calculates loss using cross entropy with label smoothing and f1-score
 
-`dataset.py`: Dataset 클래스가 포함된 코드
+`dataset.py`: generates the dataset to feed the model to train
 
-`data_reset.py`: 데이터 리셋합니다
+`data_reset.py`: generates the image dataset divided into 18 classes (train and validation)
 
-`early_stopping.py`: 일찍 멈춥니다
+`early_stopping.py`: implements early stopping (patience decides how many epochs to tolerate after val loss exceeds min. val loss)
 
-`utils.py`: EfficientNet에 필요한 코드가 포함됨
+`utils.py`: required by EfficientNet model
 
-`transformation.py`: 이미지 변경합니다
+`transformation.py`: a group of transformation functions that can be claimed by args parser
 
-`dashboard.ipynb`: 대쉬보드에 이미지 나옵니다
+`dashboard.ipynb`: 
 <br/><br/>
 
 ## USAGE
@@ -103,7 +103,7 @@ $ python main.py --model 7 --tf yogurt --lr 2e-3 --batch_size 16 --num_workers 4
 - argument parser `--tf` can receive types of augmentation
 - Transformation functions applied to training datasets and test datasets are different: image transformation for inference should be modified as little as possible
 
-- Consult [transformation.py](https://github.com/boostcampaitech2/image-classification-level1-30/blob/main/transformation.py ) for detailed explanation on the types of transformation
+- Consult [transformation.py](https://github.com/boostcampaitech2/image-classification-level1-30/blob/main/transformation.py) for detailed explanation on the types of transformation
 
 ### 3. Inference
 ```
