@@ -50,7 +50,7 @@ $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 
 `data_reset.py`: generates the image dataset divided into 18 classes (train and validation)
 
-`early_stopping.py`: implements early stopping from [Bjarten](https://github.com/Bjarten/early-stopping-pytorch) (patience decides how many epochs to tolerate after val loss exceeds min. val loss)
+`early_stopping.py`: Early Stopping function from [Bjarten](https://github.com/Bjarten/early-stopping-pytorch) (patience decides how many epochs to tolerate after val loss exceeds min. val loss)
 
 `transformation.py`: a group of transformation functions that can be claimed by args parser
 
