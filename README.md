@@ -54,7 +54,7 @@ $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 
 `transformation.py`: a group of transformation functions that can be claimed by args parser
 
-`dashboard.ipynb`: 
+`dashboard.ipynb`: can observe the images with labels from the inferred csv files
 <br/><br/>
 
 ## USAGE
