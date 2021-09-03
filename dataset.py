@@ -1,22 +1,17 @@
 import os
 from glob import glob
-import numpy as np
 
 from PIL import Image
 
 from torch.utils.data import Dataset
 
-import albumentations as A    #pip install -U albumentations
+import albumentations as A
 import cv2
 
-from torchvision import transforms
-#from torchvision.transforms import Resize, ToTensor, Normalize
 
-#from matplotlib import pyplot as plt
-
-IDX_NONE_TF = 0  #Index of No Transfrom (Initial Value)
-IDX_TV_TF   = 1  #Index of TorchVision Transform
-IDX_ALBU_TF = 2  #Index of Albumentation Transform
+IDX_NONE_TF = 0  # Index of No Transfrom (Initial Value)
+IDX_TV_TF   = 1  # Index of TorchVision Transform
+IDX_ALBU_TF = 2  # Index of Albumentation Transform
 
 class TrainDataset(Dataset):
     def __init__(self,  transform=None, classes=18, tr='mask', train=True):
@@ -63,7 +58,6 @@ class TrainDataset(Dataset):
         if self.index_transform == IDX_ALBU_TF:
             image = cv2.cvtColor(cv2.imread(self.img_paths[index].strip()), cv2.COLOR_BGR2RGB)
             image = self.transform(image=image)['image'] #dtype: uint8
-            # image = transforms.ToTensor()(image) #dtype FloatTensor
         else:
             image = self.transform(Image.open(self.img_paths[index].strip()))
             
@@ -71,22 +65,3 @@ class TrainDataset(Dataset):
 
     def __len__(self):
         return len(self.img_paths)
-
-    def test_transform(self):
-        path_test_image = '/opt/ml/input/data/train/images/000001_female_Asian_45/mask1.jpg'
-        image_initial = Image.open(path_test_image)    
-        if self.transform: #transform이 있을 경우 index_transform에 따라 Albumantion Transformation or TorchVision transformation 적용
-            if self.index_transform == IDX_ALBU_TF:
-                image = cv2.cvtColor(cv2.imread(path_test_image), cv2.COLOR_BGR2RGB)
-                image = self.transform(image=image)['image']
-                #image = transforms.ToTensor()(image)
-            else:
-                image = self.transform(Image.open(path_test_image))
-        fig, ax = plt.subplots(1, 2, figsize=(7, 4))
-        ax[0].set_title('original ' + str(image_initial.size) )
-        ax[0].imshow(transforms.ToPILImage()(transforms.ToTensor()(image_initial)))     
-        if self.transform:
-            title_name = 'Albu ' if self.index_transform == IDX_ALBU_TF else 'T.V. '
-            ax[1].set_title(title_name + str(image.shape))
-            ax[1].imshow(transforms.ToPILImage()(image))                        
-    

@@ -1,10 +1,10 @@
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-from torchvision import transforms
-from torchvision.transforms import Resize, ToTensor, Normalize
-
 def get_transform(t_name):
+    '''
+    Transformation functions for train/test datasets.
+    '''
     
     if t_name == 'water':
         t = A.Compose(

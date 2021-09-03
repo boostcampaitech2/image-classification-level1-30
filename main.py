@@ -5,8 +5,7 @@ import random
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 # from model import Model
 from dataset import TrainDataset
@@ -17,12 +16,6 @@ from model import EfficientNet
 from label_smoothing_loss import LabelSmoothing
 
 from torch.utils.tensorboard import SummaryWriter
-
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-
-## validation set
-from sklearn.model_selection import StratifiedShuffleSplit
 
 ## time for tensorboard log
 from datetime import datetime
@@ -105,9 +98,6 @@ def main(args):
     n_time = now.strftime("%m_%d_%H:%M")
 
     writer = SummaryWriter(f'runs/{n_time}_b{args.model}_tf:{args.tf}_lr:{args.lr}_bs:{args.batch_size}_epochs_{args.epochs}')
-
-    # stratified validation set maker
-    validation_splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
 
     # Loading traindataset
     train_set = TrainDataset(transform=transform, classes=args.classes, tr=args.target, train=True)

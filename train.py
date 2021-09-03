@@ -1,13 +1,7 @@
-import os
-import argparse
 import numpy as np
 from tqdm import tqdm
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
 import logging
+import torch
 
 
 def rand_bbox(size, lam):
