@@ -1,14 +1,11 @@
 # :mask: Image-classification-level1-30
 
 ## Main Subject
-
-
-
+As COVID-19 largely impacts people’s lives socially and economically, many scientists and engineers contemplated how to utilize technology to alleviate people’s suffer. One of the most effective and easiest ways to prevent the spread is agreed to be wearing masks. Thus, we came up with this project which implements machine learning mechanism to classify people wearing masks either properly or not as well as their gender and age.
 <br/><br/>
 
 ## Installation
 **1. Set up the python environment:**
-
 - Recommended python version 3.8.5
 ```
 $ conda create -n venv python=3.8.5 pip
@@ -30,8 +27,9 @@ $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 <br/>
 
 ## Classes for Classification
+- Three subclasses (mask, gender, and age) are combined to have a total of eighteen classes
 <img src=https://i.imgur.com/efDFm0m.png>
-<br/><br/>
+<br/>
 
 ## Function Description
 `main.py`: main 함수
