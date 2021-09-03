@@ -101,7 +101,7 @@ $ python main.py --model 7 --tf yogurt --lr 2e-3 --batch_size 16 --num_workers 4
 
 **Image Transformation**<br>
 - argument parser `--tf` can receive types of augmentation
-- Transformation functions applied to training datasets and test datasets are different: image transformation for inference should be modified as little as possible
+- Transformation functions applied to training datasets and test datasets are different: images for inference should be modified as little as possible
 
 - Consult [transformation.py](https://github.com/boostcampaitech2/image-classification-level1-30/blob/main/transformation.py) for detailed explanation on the types of transformation
 
