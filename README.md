@@ -38,9 +38,11 @@ $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 
 `model.py`: EfficientNet model from [lukemelas](https://github.com/lukemelas/EfficientNet-PyTorch)
 
+`utils.py`: required by EfficientNet model
+
 `inference.py`: tests the model using the test dataset and outputs the inferred csv file
 
-`loss.py`: caculates loss using cross entropy and f1-score
+`loss.py`: calculates loss using cross entropy and f1-score
 
 `label_smoothing_loss.py`: calculates loss using cross entropy with label smoothing and f1-score
 
@@ -48,9 +50,7 @@ $ pip install -r $ROOT/image-classification-level1-30/requirements.txt
 
 `data_reset.py`: generates the image dataset divided into 18 classes (train and validation)
 
-`early_stopping.py`: implements early stopping (patience decides how many epochs to tolerate after val loss exceeds min. val loss)
-
-`utils.py`: required by EfficientNet model
+`early_stopping.py`: implements early stopping from [Bjarten](https://github.com/Bjarten/early-stopping-pytorch) (patience decides how many epochs to tolerate after val loss exceeds min. val loss)
 
 `transformation.py`: a group of transformation functions that can be claimed by args parser
 
